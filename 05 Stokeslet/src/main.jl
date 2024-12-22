@@ -1,5 +1,5 @@
 #= this script is intended to be run using:
-    julia main.jl > out.out 2>&1 &
+julia main.jl > out.out 2>&1
 =#
 #= ==========================================================================================
 =============================================================================================
@@ -33,8 +33,8 @@ model = modelInit(;
     x = x,
     viscosity = viscosity,
     isFluidCompressible = isFluidCompressible,
-    solidNodes = solidNodes,
-    solidNodeVelocity = solidNodeVelocity,
+    walledDimensions = walledDimensions,
+    forceDensity = stokeslet,
     saveData = true
 );
 

@@ -4,6 +4,7 @@ anims/
 figs/
 output.lbm/
 data.lbm/
+figure*.*
 out.out
 .ipynb_checkpoints/
 

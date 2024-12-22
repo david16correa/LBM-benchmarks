@@ -1,5 +1,5 @@
 #= this script is intended to be run using:
-    julia main.jl > out.out 2>&1 &
+julia main.jl > out.out 2>&1
 =#
 #= ==========================================================================================
 =============================================================================================
@@ -22,6 +22,9 @@ using LBMengine
 # parameters
 include("$srcPath/params.jl")
 
+# special functions for this experiment
+include("$srcPath/aux.jl")
+
 #= ==========================================================================================
 =============================================================================================
 main
@@ -33,21 +36,20 @@ model = modelInit(;
     x = x,
     viscosity = viscosity,
     isFluidCompressible = isFluidCompressible,
-    solidNodes = solidNodes,
-    forceDensity = forceDensity,
     saveData = true
 );
 addBead!(model;
+    massDensity = massDensity,
     radius = radius,
     position = position,
     coupleTorques = coupleTorques,
     coupleForces = coupleForces,
-    scheme = scheme
+    angularVelocity = angularVelocity,
 );
 
 println("running simulation..."); flush(stdout);
 @time LBMpropagate!(model; verbose = true, simulationTime = simulationTime, ticksBetweenSaves = ticksBetweenSaves);
-
+#
 println("plotting the mass density and fluid velocity..."); flush(stdout);
 plotMassDensity(model); plotFluidVelocity(model);
 
