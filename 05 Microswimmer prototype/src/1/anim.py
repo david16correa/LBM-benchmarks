@@ -15,7 +15,8 @@ import re
 import fig
 
 # directory of the data is saved
-dataDir = '../data.lbm/'
+src_n = os.path.basename(os.getcwd())
+dataDir = f'../../data.lbm/{src_n}/'
 
 # all ticks are found using regular expressions
 pattern = r'fluidTrj_(\d+)\.csv'
@@ -40,14 +41,21 @@ os.mkdir("anims")
 # ==========================================================================================
 # ==========================================================================================
 
+particleDf = pd.read_csv(dataDir+"particlesTrj.csv")
 
-fluidDf = pd.read_csv(dataDir + f"fluidTrj_{ticks[-1]}.csv").set_index(["id_x","id_y"]).sort_index()
-uM = np.sqrt(fluidDf.fluidVelocity_x**2 + fluidDf.fluidVelocity_y**2).max()
+id=-5
+finalFluidDf = pd.read_csv(dataDir + f"fluidTrj_{ticks[id]}.csv").set_index(["id_x","id_y"]).sort_index()
+finalPosX = particleDf.position_x.values[id]
+finalPosY = particleDf.position_y.values[id]
+
+radius = 4
+auxRadius = radius+0.5
+uM = np.sqrt(finalFluidDf.query(f'(coordinate_x - {finalPosX})**2 + (coordinate_y - {finalPosY})**2 > {auxRadius}**2').fluidVelocity_x**2 + finalFluidDf.query(f'(coordinate_x - {finalPosX})**2 + (coordinate_y - {finalPosY})**2 > {auxRadius}**2').fluidVelocity_y**2).max()
 
 # the data is read
 for tickId in np.arange(len(ticks)):
     fluidDf = pd.read_csv(dataDir + f"fluidTrj_{ticks[tickId]}.csv").set_index(["id_x","id_y"]).sort_index()
-    figure.plotFig(fluidDf, uM)
+    figure.plotFig(fluidDf, uM, particleDf, tickId)
 
     plt.savefig(f"{outputDir}/{tickId}.png", format="png", dpi=300, bbox_inches="tight")
     plt.close()

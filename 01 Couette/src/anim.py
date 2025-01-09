@@ -40,16 +40,12 @@ os.mkdir("anims")
 # ==========================================================================================
 # ==========================================================================================
 
-
-fluidDf = pd.read_csv(dataDir + f"fluidTrj_{ticks[-1]}.csv").set_index(["id_x","id_y"]).sort_index()
-uM = np.sqrt(fluidDf.fluidVelocity_x**2 + fluidDf.fluidVelocity_y**2).max()
-
 # the data is read
 for tickId in np.arange(len(ticks)):
     fluidDf = pd.read_csv(dataDir + f"fluidTrj_{ticks[tickId]}.csv").set_index(["id_x","id_y"]).sort_index()
-    figure.plotFig(fluidDf, uM)
+    figure.plotFig(fluidDf)
 
-    plt.savefig(f"{outputDir}/{tickId}.png", format="png", dpi=300, bbox_inches="tight")
+    plt.savefig(f"{outputDir}/{tickId}.png", format="png")
     plt.close()
 
 mkAnimSh = f'ffmpeg -framerate 10 -i {outputDir}/%d.png -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" -c:v libx264 -pix_fmt yuv420p anims/output.mp4'
