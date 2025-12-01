@@ -223,49 +223,6 @@ def pltFluidVelocity(df, particleDf, maxFluidSpeed = 1e-3):
 
     return fig, axes
 
-def stressTensorOverview(df):
-    # setting up stuff
-    fig, axes = plt.subplots(2,2,figsize = (10,10))
-
-    # Add a title for the whole figure
-    fig.suptitle("$\\sigma_{ij}$", fontsize=16)
-
-    # Create a meshgrid for plotting
-    x_unique = df['coordinate_x'].unique()
-    y_unique = df['coordinate_y'].unique()
-    X, Y = np.meshgrid(x_unique, y_unique)
-
-    cs = []
-
-    # plotting
-    c = axes[0,0].pcolormesh(X,Y,df["component_xx"].unstack().values.transpose()); cs.append(c);
-    axes[0,0].set_title("$\\sigma_{xx}$")
-
-    c = axes[0,1].pcolormesh(X,Y,df["component_xy"].unstack().values.transpose()); cs.append(c);
-    axes[0,1].set_title("$\\sigma_{xy}$")
-
-    c = axes[1,0].pcolormesh(X,Y,df["component_yx"].unstack().values.transpose()); cs.append(c);
-    axes[1,0].set_title("$\\sigma_{yx}$")
-
-    c = axes[1,1].pcolormesh(X,Y,df["component_yy"].unstack().values.transpose()); cs.append(c);
-    axes[1,1].set_title("$\\sigma_{yy}$")
-
-
-    # for ax in axes.flat:
-    for i in range(4):
-        ax = axes.flatten()[i]
-        c = cs[i]
-        ax.set_aspect('equal')
-        ax.set_xlabel("$x$")
-        ax.set_ylabel("$y$")    
-        cbar = fig.colorbar(c, ax=ax, shrink=.8)
-        cbar.ax.yaxis.set_major_formatter(formatter)
-        cbar.ax.yaxis.get_offset_text().set_fontsize(10)  # Adjust the font size if necessary
-    #     ax.axhline(wallPosition, color = "k", alpha = 0.1)
-    #     ax.axhspan(-2, wallPosition, color='gray', alpha=0.1)  # Shade the wall
-    
-    return fig, axes
-
 def fluidOverview2(df1, df2, title):
     fig, axes = plt.subplots(1, 2, figsize = (6,2.7))
 
@@ -345,4 +302,44 @@ def fluidOverview2(df1, df2, title):
     axes[1].set_yticks([ymin, 0, ymax])
     axes[1].tick_params(labelleft=False)
     
+    return fig, axes
+
+def plotTrj(ogDf, targetTime = -1):
+    radius = 3
+    e = 3*radius
+    D = 10*radius
+    W = 1e-2
+    expectedSpeed = 0.7 * W * (radius/D) * ((D - e)/D)**2
+
+
+    totalTime = ogDf.time.values[-1]
+
+    if targetTime == -1:
+        targetTime = totalTime
+
+    df = ogDf.query(f"time<={targetTime}")
+    particleTime = df.time.values
+
+    fig, axes = plt.subplots(figsize=(3,1.5))
+
+    particleTime = df.time.unique()
+    nParticles = len(df.particleId.unique())
+    for Id in np.arange(nParticles):
+        axes.plot(particleTime, df.query(f"particleId == {Id+1}").position_x.values, alpha = 0.85, label=f"$x_{Id+1}$", zorder = 2)
+
+    axes.plot(particleTime, particleTime * expectedSpeed, color = "black", alpha = 0.5, linewidth=1, linestyle='dashed', zorder = 1)
+
+    for onset in [n * 8400 for n in range(6) if n*8400 <= targetTime+1]:
+        axes.axvline(onset, color = "#CA3D34", alpha = 0.5, linewidth=1, linestyle='dashed', zorder = 0)
+
+    axes.set_xlim(0, 4.3e4)
+    axes.set_xticks([0, 1e4, 2e4, 3e4, 4e4])
+    axes.set_xticklabels([0, 10, 20, 30, 40])
+
+    axes.set_ylim(-35,50)
+    axes.set_yticks([-30, 0, 30])
+
+    axes.set_xlabel("$t ~ (\\mathrm{ms})$")
+    axes.set_ylabel("$x ~ (\\mu \\mathrm{m})$")
+
     return fig, axes
